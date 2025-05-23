@@ -108,5 +108,29 @@ namespace Csharp.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login");
         }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount(string password)
+        {
+            var userId = int.Parse(User.FindFirstValue("UserId"));
+            var user = await _db.Users.FindAsync(userId);
+
+            if (user == null)
+                return RedirectToAction("Login");
+
+            if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            {
+                ModelState.AddModelError(string.Empty, "Nesprávné heslo.");
+                return RedirectToAction("Index", "Notes");
+            }
+
+            _db.Users.Remove(user);
+            await _db.SaveChangesAsync();
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            return RedirectToAction("Register", "Account");
+        }
     }
 }

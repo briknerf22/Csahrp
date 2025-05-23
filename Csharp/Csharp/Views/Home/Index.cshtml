@@ -1,8 +1,26 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var isAuthenticated = HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1>Vítejte v aplikaci Poznámky</h1>
+
+@if (!isAuthenticated)
+{
+    <p>
+        <a asp-controller="Account" asp-action="Register">Registrace</a> |
+        <a asp-controller="Account" asp-action="Login">Přihlášení</a>
+    </p>
+}
+else
+{
+    <p>
+        <a asp-controller="Notes" asp-action="Index">Moje poznámky</a> |
+        <form method="post" asp-controller="Account" asp-action="Logout" style="display:inline;">
+            <button type="submit">Odhlásit se</button>
+        </form>
+    </p>
+}
