@@ -1,0 +1,45 @@
+﻿@model Csharp.Models.AccountViewModel
+
+<h2>Register</h2>
+<form asp-action="Register" method="post">
+    <label>Username</label>
+    <input asp-for="Register.Username" />
+    <span asp-validation-for="Register.Username"></span>
+
+    <label>Password</label>
+    <input asp-for="Register.Password" type="password" />
+    <span asp-validation-for="Register.Password"></span>
+
+    <label>Confirm Password</label>
+    <input asp-for="Register.ConfirmPassword" type="password" />
+    <span asp-validation-for="Register.ConfirmPassword"></span>
+
+    <label>
+        <input asp-for="Register.AiTrainingConsent" type="checkbox" />
+        Souhlasím, že mnou vložená data mohou být využita pro trénink AI
+    </label>
+    <span asp-validation-for="Register.AiTrainingConsent"></span>
+
+    <button type="submit">Register</button>
+</form>
+
+<hr />
+
+<h2>Login</h2>
+<form asp-action="Login" method="post">
+    <label>Username</label>
+    <input asp-for="Login.Username" />
+    <span asp-validation-for="Login.Username"></span>
+
+    <label>Password</label>
+    <input asp-for="Login.Password" type="password" />
+    <span asp-validation-for="Login.Password"></span>
+
+    <button type="submit">Login</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
