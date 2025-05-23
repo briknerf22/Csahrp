@@ -58,7 +58,7 @@
                 <td>
                     <form asp-action="Delete" method="post" class="inline-form">
                         <input type="hidden" name="id" value="@note.Id" />
-                        <button type="submit" class="btn-simple btn-danger">Smazat</button>
+                        <button type="submit" class="btn-simple btn-danger-danger">Smazat</button>
                     </form>
                 </td>
             </tr>
@@ -161,12 +161,20 @@
             text-decoration: underline;
         }
 
-    .btn-danger {
-        color: ghostwhite;
-    }
+        .btn-danger {
+            color: ghostwhite;
+        }
 
         .btn-danger:hover {
             color: ghostwhite;
+        }
+
+        .btn-danger-danger {
+            color: red;
+        }
+
+        .btn-danger-danger:hover {
+            color: darkred;
         }
 
     /* Styl pro formulář zrušení účtu */
