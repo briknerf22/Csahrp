@@ -15,8 +15,14 @@ public class NotesController : Controller
         _db = db;
     }
 
-    private int GetUserId() =>
-        int.Parse(User.FindFirstValue("UserId") ?? "0");
+    private int GetUserId()
+    {
+        var userIdClaim = User.FindFirstValue("UserId");
+        if (int.TryParse(userIdClaim, out var id))
+            return id;
+
+        throw new Exception("UserId claim missing or invalid");
+    }
 
     public async Task<IActionResult> Index(bool onlyImportant = false)
     {
@@ -32,13 +38,22 @@ public class NotesController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Add(Note note)
+    public async Task<IActionResult> Add(string title, string content)
     {
-        if (!ModelState.IsValid)
+        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content))
+        {
+            // Můžeš přidat chybu do ModelState pokud chceš zobrazit validaci
             return RedirectToAction("Index");
+        }
 
-        note.UserId = GetUserId();
-        note.CreatedAt = DateTime.UtcNow;
+        var note = new Note
+        {
+            Title = title,
+            Content = content,
+            CreatedAt = DateTime.UtcNow,
+            IsImportant = false,
+            UserId = GetUserId()
+        };
 
         _db.Notes.Add(note);
         await _db.SaveChangesAsync();
