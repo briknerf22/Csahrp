@@ -1,0 +1,42 @@
+﻿@model List<Csharp.Models.Note>
+
+<h2>Moje poznámky</h2>
+
+<form method="post" asp-action="Add">
+    <input type="text" name="Title" placeholder="Nadpis" required />
+    <textarea name="Content" placeholder="Obsah poznámky" required></textarea>
+    <button type="submit">Přidat poznámku</button>
+</form>
+
+<p>
+    <a asp-action="Index" asp-route-onlyImportant="false">Všechny poznámky</a> |
+    <a asp-action="Index" asp-route-onlyImportant="true">Pouze důležité</a>
+</p>
+
+<table>
+    <thead>
+        <tr><th>Nadpis</th><th>Obsah</th><th>Datum</th><th>Důležité</th><th>Akce</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var note in Model)
+        {
+            <tr>
+                <td>@note.Title</td>
+                <td>@note.Content</td>
+                <td>@note.CreatedAt.ToLocalTime().ToString("g")</td>
+                <td>
+                    <form asp-action="ToggleImportant" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@note.Id" />
+                        <button type="submit">@((note.IsImportant) ? "Ano" : "Ne")</button>
+                    </form>
+                </td>
+                <td>
+                    <form asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@note.Id" />
+                        <button type="submit">Smazat</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,9 +1,11 @@
-﻿using BCrypt.Net;
-using Csharp.Data;
-using Csharp.Models;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Win32;
+using Csharp.Data;
+using Csharp.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Csharp.Controllers
 {
@@ -19,7 +21,6 @@ namespace Csharp.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            // Posíláme pevně typovaný ViewModel
             return View(new AccountViewModel());
         }
 
@@ -28,7 +29,6 @@ namespace Csharp.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Pošleme do View ViewModel s modelem pro registraci a prázdný Login
                 return View("Index", new AccountViewModel { Register = model, Login = new Login() });
             }
 
@@ -48,8 +48,10 @@ namespace Csharp.Controllers
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            // Můžeš uživatele rovnou přihlásit, tady jen redirect
-            return RedirectToAction("Index", "Account");
+            // Přihlášení uživatele po registraci
+            await SignInUser(user);
+
+            return RedirectToAction("Index", "Notes");
         }
 
         [HttpPost]
@@ -67,10 +69,59 @@ namespace Csharp.Controllers
                 return View("Index", new AccountViewModel { Register = new Register(), Login = model });
             }
 
-            // Přihlášení uživatele (cookie apod.) - není zde řešeno
-            // await SignInUser(user);
+            // Přihlášení uživatele po úspěšném přihlášení
+            await SignInUser(user);
 
-            return RedirectToAction("Notes", "Home");
+            return RedirectToAction("Index", "Notes");
+        }
+
+        // Metoda pro cookie autentizaci uživatele
+        private async Task SignInUser(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim("UserId", user.Id.ToString())
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Account");
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult DeleteAccount()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> DeleteAccount(string password)
+        {
+            var userId = int.Parse(User.FindFirstValue("UserId"));
+            var user = await _db.Users.Include(u => u.Notes).FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            {
+                ModelState.AddModelError("", "Nesprávné heslo.");
+                return View();
+            }
+
+            _db.Notes.RemoveRange(user.Notes);
+            _db.Users.Remove(user);
+            await _db.SaveChangesAsync();
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Account");
         }
     }
 }
