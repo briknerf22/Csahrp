@@ -16,8 +16,8 @@ namespace Csharp.Models
         [DataType(DataType.Password)]
         public string ConfirmPassword { get; set; } = null!;
 
-        [Required]
-        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the AI training consent.")]
+        [Required(ErrorMessage = "You must accept the AI training consent.")]
+        [Display(Name = "Souhlasím, že mnou vložená data mohou být využita pro trénink AI")]
         public bool AiTrainingConsent { get; set; }
     }
 }
