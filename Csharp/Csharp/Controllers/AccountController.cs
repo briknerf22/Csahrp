@@ -55,7 +55,9 @@ namespace Csharp.Controllers
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            // Po registraci neprovádíme automatické přihlášení, ale přesměrujeme na login
+            // Přidej úspěšnou zprávu do TempData
+            TempData["SuccessMessage"] = "Registrace proběhla úspěšně. Nyní se můžete přihlásit.";
+
             return RedirectToAction("Login");
         }
 
@@ -121,7 +123,8 @@ namespace Csharp.Controllers
 
             if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
-                ModelState.AddModelError(string.Empty, "Nesprávné heslo.");
+                // Přidej chybu do TempData, aby ji bylo možné zobrazit na stránce Notes
+                TempData["ErrorMessage"] = "Nesprávné heslo.";
                 return RedirectToAction("Index", "Notes");
             }
 
@@ -129,6 +132,8 @@ namespace Csharp.Controllers
             await _db.SaveChangesAsync();
 
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            TempData["SuccessMessage"] = "Váš účet byl úspěšně smazán.";
 
             return RedirectToAction("Register", "Account");
         }
