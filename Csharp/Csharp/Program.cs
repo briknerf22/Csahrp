@@ -18,6 +18,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Index"; // Pøesmìrování na pøihlášení, když nejsi autentizovaný
     });
 
+builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -37,6 +39,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
